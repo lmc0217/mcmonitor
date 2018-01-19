@@ -13,11 +13,13 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.alibaba.druid.pool.DruidPooledConnection;
 
+/**
+ * 数据库连接池
+ * 
+ * @author liu mengchao
+ * 
+ */
 public class SqlConnectionPool {
-	/**
-	 * 数据库连接池
-	 */
-	private static final SqlConnectionPool poolconnect = new SqlConnectionPool();
 
 	private static DruidDataSource druidsource;// 数据源
 
@@ -32,19 +34,6 @@ public class SqlConnectionPool {
 					.createDataSource(properties);
 		} catch (Exception e) {
 		}
-
-	}
-
-	/**
-	 * 获取单列
-	 * 
-	 * @return
-	 */
-	public static SqlConnectionPool getInstance() {
-		return poolconnect;
-	}
-
-	private SqlConnectionPool() {
 
 	}
 
@@ -64,7 +53,7 @@ public class SqlConnectionPool {
 	 * @return
 	 * @throws SQLException
 	 */
-	public DruidPooledConnection getConnection() throws SQLException {
+	public static DruidPooledConnection getConnection() throws SQLException {
 		return druidsource.getConnection();
 	}
 

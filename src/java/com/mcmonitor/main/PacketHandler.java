@@ -1,5 +1,6 @@
 package com.mcmonitor.main;
 
+import java.sql.Timestamp;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,6 +10,17 @@ import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.Presence;
 
+import com.mcmonitor.database.sqltable.Thdata;
+import com.mcmonitor.database.tool.DatabaseHandler;
+import com.mcmonitor.database.tool.SqlRunnable;
+import com.mcmonitor.database.tool.SqlUtils;
+
+/**
+ * 包处理Handler类
+ * 
+ * @author liu mengchao
+ * 
+ */
 public class PacketHandler {
 	private ExecutorService packetDataTask;
 	private static final PacketHandler packhandler = new PacketHandler();
@@ -26,7 +38,6 @@ public class PacketHandler {
 	 */
 	public void initThreadPool() {
 		packetDataTask = Executors.newFixedThreadPool(100);
-		System.out.println("初始化线程完成");
 	}
 	public ExecutorService getPacketDataTask() {
 		return packetDataTask;
@@ -52,6 +63,19 @@ public class PacketHandler {
             	System.out.println("用户退出服务器成功："+ presence.toXML());
             } else {
             	System.out.println("收到presence数据包："+ presence.toXML());
+            	Thdata thdata = new Thdata();
+            	thdata.setMac_id("0d6764d2baf06644731d75fee9d3eaa8");
+            	thdata.setDevice_id("0d6764d2baf06644731d75fee9d3eaa8");
+            	thdata.setDatetime(new Timestamp(System.currentTimeMillis()));
+            	thdata.setDevice_type(0);
+            	thdata.setModel("湿湿度");
+            	thdata.setStatus(1);
+            	thdata.setTemp(2100);
+            	thdata.setHumidity(5900);
+            	thdata.setPrec(2);
+            	thdata.setOrder_id(1);
+            	SqlUtils.execute(new SqlRunnable(DatabaseHandler.s_insert(thdata,
+        				"thdata")));
             }
         }
 	}
