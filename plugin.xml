@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin>
+    <class>com.mcmonitor.main.MonitorPlugin</class>
+    <name>mcmonitor</name>
+    <description>connect dbserver when openfire open.</description>
+    <author>liu mengchao</author>
+    <version>1.0.0</version>
+    <date>1/17/2018</date>
+    <minServerVersion>1.0.0</minServerVersion>
+    <adminconsole>  
+    </adminconsole> 
+</plugin>
