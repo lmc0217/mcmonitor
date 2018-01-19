@@ -1,6 +1,8 @@
 package com.mcmonitor.main;
 
 import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,6 +17,12 @@ import com.mcmonitor.database.tool.DatabaseHandler;
 import com.mcmonitor.database.tool.SqlRunnable;
 import com.mcmonitor.database.tool.SqlUtils;
 
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Node;
 /**
  * 包处理Handler类
  * 
@@ -61,8 +69,6 @@ public class PacketHandler {
             Presence presence = (Presence) copyPacket;
             if (presence.getType() == Presence.Type.unavailable) {
             	System.out.println("用户退出服务器成功："+ presence.toXML());
-            } else {
-            	System.out.println("收到presence数据包："+ presence.toXML());
             	Thdata thdata = new Thdata();
             	thdata.setMac_id("0d6764d2baf06644731d75fee9d3eaa8");
             	thdata.setDevice_id("0d6764d2baf06644731d75fee9d3eaa8");
@@ -76,7 +82,36 @@ public class PacketHandler {
             	thdata.setOrder_id(1);
             	SqlUtils.execute(new SqlRunnable(DatabaseHandler.s_insert(thdata,
         				"thdata")));
+            } else {
+            	System.out.println("收到presence数据包："+ presence.toXML());
+            	parePacketXML(presence.toXML());
             }
         }
 	}
+	/**
+	 * xml解析
+	 * 
+	 */
+	private static void parePacketXML(String packetXML) {
+		try {
+			Document document = DocumentHelper.parseText(packetXML);
+//		    Element root = document.getRootElement();
+		    // iterate through child elements of root
+			Node node_presence = document.selectSingleNode("/presence");
+		    System.out.println("From = " + node_presence.valueOf("@from"));
+		    
+		    Node node_set = document.selectSingleNode("/presence/set");
+		    System.out.println("xmlns = " + node_set.valueOf("@xmlns"));
+		    
+		    Node node_service = document.selectSingleNode("/presence/set/service");
+		    System.out.println("service name = " + node_service.valueOf("@name"));
+		    
+		    Attribute attribute = (Attribute)document.selectSingleNode("/presence/set[@xmlns]");
+		    System.out.println("属性名：" + attribute.getName() + "--属性值："
+                    + attribute.getValue());
+		} catch (DocumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+	 }
 }
