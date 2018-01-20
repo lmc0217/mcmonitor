@@ -1,6 +1,7 @@
 package com.mcmonitor.main;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.dom4j.XPath;
 /**
  * 包处理Handler类
  * 
@@ -95,20 +97,27 @@ public class PacketHandler {
 	private static void parePacketXML(String packetXML) {
 		try {
 			Document document = DocumentHelper.parseText(packetXML);
-//		    Element root = document.getRootElement();
-		    // iterate through child elements of root
-			Node node_presence = document.selectSingleNode("/presence");
-		    System.out.println("From = " + node_presence.valueOf("@from"));
-		    
-		    Node node_set = document.selectSingleNode("/presence/set");
-		    System.out.println("xmlns = " + node_set.valueOf("@xmlns"));
-		    
-		    Node node_service = document.selectSingleNode("/presence/set/service");
-		    System.out.println("service name = " + node_service.valueOf("@name"));
-		    
-		    Attribute attribute = (Attribute)document.selectSingleNode("/presence/set[@xmlns]");
-		    System.out.println("属性名：" + attribute.getName() + "--属性值："
-                    + attribute.getValue());
+			HashMap<String, String> map = new HashMap<String, String>();  
+			map.put( "xmn", "urn:xmpp:iot:data:save");  
+			XPath xpath = document.createXPath( "//xmn:set/xmn:service");  
+			xpath.setNamespaceURIs(map);
+			
+		    Element ele_set = document.getRootElement().element("set");
+		    String xmlns = ele_set.getNamespaceURI();
+		    if (xmlns.equals("urn:xmpp:iot:data:save")) {
+		    	Node node_presence = document.selectSingleNode("/presence");
+			    System.out.println("From = " + node_presence.valueOf("@from"));
+			    Node node_set = xpath.selectSingleNode(document);
+			    System.out.println("serviceName= " + node_set.valueOf("@name"));
+			    System.out.println("serviceTimes= " + node_set.valueOf("@timestamp"));
+			    
+			    Node node_service = document.selectSingleNode("/presence/set/service/int[@name='temp']");
+			    System.out.println("service name = " + node_service.valueOf("@name"));
+			    
+			    Attribute attribute = (Attribute)document.selectSingleNode("/presence/set[@xmlns]");
+			    System.out.println("属性名：" + attribute.getName() + "--属性值："
+	                    + attribute.getValue());
+		    }
 		} catch (DocumentException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
