@@ -1,6 +1,7 @@
 package com.mcmonitor.main;
 
-import java.io.File;  
+import java.io.File;
+import java.sql.SQLException;
 
 import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.container.Plugin;
@@ -14,6 +15,7 @@ import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 
 import com.mcmonitor.database.tool.SqlConnectionPool;
+import com.mcmonitor.tool.MyEnvironment;
 
 /**
  *  Packet 数据处理插件
@@ -33,7 +35,11 @@ public class MonitorPlugin implements PacketInterceptor, Plugin {
 	public void initializePlugin(PluginManager manager, File pluginDirectory) {
 		// TODO Auto-generated method stub
 		server = XMPPServer.getInstance();
-        System.out.println("MonitorPlugin----开启，，，卧泥玛");
+        System.out.println("MonitorPlugin----插件开启");
+        // check environment
+     	if (!MyEnvironment.mkEviroment()) {
+     		System.exit(-1);
+     	}
         // connect database(mysql...)
         try {
         	SqlConnectionPool.getDataSource();
@@ -52,7 +58,14 @@ public class MonitorPlugin implements PacketInterceptor, Plugin {
 	@Override
 	public void destroyPlugin() {
 		// TODO Auto-generated method stub
-		System.out.println("MonitorPlugin----关闭，，，特么蛋");  
+		try {
+			SqlConnectionPool.getDataSource().close();
+			System.out.println("数据库连接已断开成功!!!!!!!!!!");  
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("MonitorPlugin----插件关闭");  
 	}
 
 	/**

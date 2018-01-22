@@ -17,6 +17,7 @@ import com.mcmonitor.database.sqltable.Thdata;
 import com.mcmonitor.database.tool.DatabaseHandler;
 import com.mcmonitor.database.tool.SqlRunnable;
 import com.mcmonitor.database.tool.SqlUtils;
+import com.mcmonitor.log.Log;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -73,6 +74,7 @@ public class PacketHandler {
             	System.out.println("用户退出服务器成功："+ presence.toXML());
             } else {
             	System.out.println("收到presence数据包："+ presence.toXML());
+            	Log.err.info("收到presence数据包:{}", presence.toXML());
             	parePacketXML(presence.toXML());
             }
         }
@@ -90,15 +92,22 @@ public class PacketHandler {
 			xpath_service.setNamespaceURIs(map);
 			XPath xpath_data_temp = document.createXPath( "//save:set/save:service//save:int[@name='temp']");
 			xpath_data_temp.setNamespaceURIs(map);
-			XPath xpath_data_humi = document.createXPath( "//save:set/save:service//save:int[@name='humi']");
+			XPath xpath_data_humi = document.createXPath( "//save:set/save:service//save:int[@name='humidity']");
 			xpath_data_humi.setNamespaceURIs(map);
-			XPath xpath_data_prec = document.createXPath( "//save:set/save:service//save:int[@name='digit']");
+			XPath xpath_data_prec = document.createXPath( "//save:set/save:service//save:int[@name='prec']");
 			xpath_data_prec.setNamespaceURIs(map);
 			
 		    Element ele_set = document.getRootElement().element("set");
 		    String xmlns = ele_set.getNamespaceURI();
 		    if (xmlns.equals("urn:xmpp:iot:data:save")) {
 		    	Node node_presence = document.selectSingleNode("/presence");
+		    	String id_from = node_presence.valueOf("@from").split("@")[0];
+		    	String id_to = node_presence.valueOf("@to").split("@")[0];
+		    	if (id_from.equals(id_to)) {
+		    		//发送者和接收者相当，丢弃
+		    		System.out.println("发送者和接收者相当，丢弃");
+					return;
+				}
 //			    System.out.println("From = " + node_presence.valueOf("@from"));
 //			    System.out.println("MacID = " + node_presence.valueOf("@from").split("@")[0]);
 			    
