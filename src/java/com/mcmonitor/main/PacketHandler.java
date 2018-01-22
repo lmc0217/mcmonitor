@@ -71,19 +71,6 @@ public class PacketHandler {
             Presence presence = (Presence) copyPacket;
             if (presence.getType() == Presence.Type.unavailable) {
             	System.out.println("用户退出服务器成功："+ presence.toXML());
-            	Thdata thdata = new Thdata();
-            	thdata.setMac_id("0d6764d2baf06644731d75fee9d3eaa8");
-            	thdata.setDevice_id("0d6764d2baf06644731d75fee9d3eaa8");
-            	thdata.setDatetime(new Timestamp(System.currentTimeMillis()));
-            	thdata.setDevice_type(0);
-            	thdata.setModel("湿湿度");
-            	thdata.setStatus(1);
-            	thdata.setTemp(2100);
-            	thdata.setHumidity(5900);
-            	thdata.setPrec(2);
-            	thdata.setOrder_id(1);
-            	SqlUtils.execute(new SqlRunnable(DatabaseHandler.s_insert(thdata,
-        				"thdata")));
             } else {
             	System.out.println("收到presence数据包："+ presence.toXML());
             	parePacketXML(presence.toXML());
@@ -97,26 +84,48 @@ public class PacketHandler {
 	private static void parePacketXML(String packetXML) {
 		try {
 			Document document = DocumentHelper.parseText(packetXML);
-			HashMap<String, String> map = new HashMap<String, String>();  
-			map.put( "xmn", "urn:xmpp:iot:data:save");  
-			XPath xpath = document.createXPath( "//xmn:set/xmn:service");  
-			xpath.setNamespaceURIs(map);
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put( "save", "urn:xmpp:iot:data:save");
+			XPath xpath_service = document.createXPath( "//save:set/save:service");
+			xpath_service.setNamespaceURIs(map);
+			XPath xpath_data_temp = document.createXPath( "//save:set/save:service//save:int[@name='temp']");
+			xpath_data_temp.setNamespaceURIs(map);
+			XPath xpath_data_humi = document.createXPath( "//save:set/save:service//save:int[@name='humi']");
+			xpath_data_humi.setNamespaceURIs(map);
+			XPath xpath_data_prec = document.createXPath( "//save:set/save:service//save:int[@name='digit']");
+			xpath_data_prec.setNamespaceURIs(map);
 			
 		    Element ele_set = document.getRootElement().element("set");
 		    String xmlns = ele_set.getNamespaceURI();
 		    if (xmlns.equals("urn:xmpp:iot:data:save")) {
 		    	Node node_presence = document.selectSingleNode("/presence");
-			    System.out.println("From = " + node_presence.valueOf("@from"));
-			    Node node_set = xpath.selectSingleNode(document);
-			    System.out.println("serviceName= " + node_set.valueOf("@name"));
-			    System.out.println("serviceTimes= " + node_set.valueOf("@timestamp"));
+//			    System.out.println("From = " + node_presence.valueOf("@from"));
+//			    System.out.println("MacID = " + node_presence.valueOf("@from").split("@")[0]);
 			    
-			    Node node_service = document.selectSingleNode("/presence/set/service/int[@name='temp']");
-			    System.out.println("service name = " + node_service.valueOf("@name"));
+			    Node node_service = xpath_service.selectSingleNode(document);
+//			    System.out.println("serviceName= " + node_service.valueOf("@name"));
+//			    System.out.println("serviceTimes= " + node_service.valueOf("@timestamp"));
 			    
-			    Attribute attribute = (Attribute)document.selectSingleNode("/presence/set[@xmlns]");
-			    System.out.println("属性名：" + attribute.getName() + "--属性值："
-	                    + attribute.getValue());
+			    Node node_data_temp = xpath_data_temp.selectSingleNode(document);
+			    Node node_data_humi = xpath_data_humi.selectSingleNode(document);
+			    Node node_data_prec = xpath_data_prec.selectSingleNode(document);
+//			    System.out.println(node_data_temp.valueOf("@name") + " = " + node_data_temp.valueOf("@value"));
+//			    System.out.println(node_data_humi.valueOf("@name") + " = " + node_data_humi.valueOf("@value"));
+//			    System.out.println(node_data_prec.valueOf("@name") + " = " + node_data_prec.valueOf("@value"));
+			    
+			    Thdata thdata = new Thdata();
+            	thdata.setMac_id(node_presence.valueOf("@from").split("@")[0]);
+            	thdata.setDevice_id(node_presence.valueOf("@from").split("@")[0]);
+            	thdata.setDatetime(new Timestamp(Long.parseLong(node_service.valueOf("@timestamp"))));
+            	thdata.setDevice_type(0);
+            	thdata.setModel("湿湿度");
+            	thdata.setStatus(1);
+            	thdata.setTemp(Integer.parseInt(node_data_temp.valueOf("@value")));
+            	thdata.setHumidity(Integer.parseInt(node_data_humi.valueOf("@value")));
+            	thdata.setPrec(Integer.parseInt(node_data_prec.valueOf("@value")));
+            	thdata.setOrder_id(1);
+            	SqlUtils.execute(new SqlRunnable(DatabaseHandler.s_insert(thdata,
+        				"thdata")));
 		    }
 		} catch (DocumentException e) {
             // TODO Auto-generated catch block
