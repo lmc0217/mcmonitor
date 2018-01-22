@@ -55,7 +55,7 @@ public class MonitorPlugin implements Plugin {
 	@Override
 	public void destroyPlugin() {
 		// TODO Auto-generated method stub
-		if(packetInterceptor != null){  
+		if(packetInterceptor != null){
 			interceptorManager.removeInterceptor(packetInterceptor);
 			Log.err.info("移除packet拦截器！！！！！！");
         } 

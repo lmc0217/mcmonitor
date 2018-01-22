@@ -8,6 +8,8 @@ import org.jivesoftware.openfire.user.UserManager;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.Packet;
 
+import com.mcmonitor.log.Log;
+
 public class MyPacketInterceptor implements PacketInterceptor {
 	
 	/**
@@ -29,7 +31,10 @@ public class MyPacketInterceptor implements PacketInterceptor {
             } else if ("".equals(recipient.getResource())) {
             }
         }
-        PacketHandler.handelPacket(packet, incoming, processed, session);
+        if (incoming && !processed) {
+        	PacketHandler.handelPacket(packet, incoming, processed, session);
+		} else {
+//			Log.err.info("服务器处理过的或发出的packet，不拦截");
+		}
 	}
-
 }
